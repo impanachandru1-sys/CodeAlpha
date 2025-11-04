@@ -1,0 +1,59 @@
+#include <stdio.h>
+#include <string.h>
+
+struct bank { int acc; char name[20]; float bal; } b;
+FILE *fp, *temp;
+
+void create(){
+    fp=fopen("bank.dat","ab");
+    printf("Acc No, Name, Balance: ");
+    scanf("%d %s %f",&b.acc,b.name,&b.bal);
+    fwrite(&b,sizeof b,1,fp); fclose(fp);
+}
+
+void deposit(){
+    int n; float amt;
+    printf("Acc & Amount: "); scanf("%d%f",&n,&amt);
+    fp=fopen("bank.dat","rb"); temp=fopen("temp.dat","wb");
+    while(fread(&b,sizeof b,1,fp)){
+        if(b.acc==n) b.bal+=amt;
+        fwrite(&b,sizeof b,1,temp);
+    }
+    fclose(fp); fclose(temp);
+    remove("bank.dat"); rename("temp.dat","bank.dat");
+    printf("Deposited!\n");
+}
+
+void withdraw(){
+    int n; float amt;
+    printf("Acc & Amount: "); scanf("%d%f",&n,&amt);
+    fp=fopen("bank.dat","rb"); temp=fopen("temp.dat","wb");
+    while(fread(&b,sizeof b,1,fp)){
+        if(b.acc==n && b.bal>=amt) b.bal-=amt;
+        fwrite(&b,sizeof b,1,temp);
+    }
+    fclose(fp); fclose(temp);
+    remove("bank.dat"); rename("temp.dat","bank.dat");
+    printf("Done!\n");
+}
+
+void balance(){
+    int n; printf("Acc: "); scanf("%d",&n);
+    fp=fopen("bank.dat","rb");
+    while(fread(&b,sizeof b,1,fp))
+        if(b.acc==n) printf("Acc:%d Name:%s Bal:%.2f\n",b.acc,b.name,b.bal);
+    fclose(fp);
+}
+
+int main(){
+    int ch;
+    while(1){
+        printf("\n1.New 2.Dep 3.With 4.Bal 0.Exit: ");
+        scanf("%d",&ch);
+        if(ch==1) create();
+        else if(ch==2) deposit();
+        else if(ch==3) withdraw();
+        else if(ch==4) balance();
+        else break;
+    }
+}
